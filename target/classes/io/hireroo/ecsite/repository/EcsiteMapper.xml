@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.hireroo.ecsite.repository.EcsiteMapper">
+    <select id="getItem" parameterType="string" resultType="io.hireroo.ecsite.entity.Item">
+        SELECT * FROM items WHERE id = #{itemId}
+    </select>
+    <select id="getUser" parameterType="string" resultType="io.hireroo.ecsite.entity.User">
+        SELECT * FROM users WHERE id = #{userId}
+    </select>
+    <insert id="createItem">
+        INSERT INTO items(id, name, description, price, stock) VALUES(#{id}, #{name}, #{description}, #{price}, #{stock})
+    </insert>
+    <insert id="createUser">
+        INSERT INTO users(id, name, savings) VALUES(#{id}, #{name}, #{savings})
+    </insert>
+    <delete id="deleteItem" parameterType="string">
+        DELETE FROM items WHERE id = #{itemId}
+    </delete>
+    <delete id="deleteUser" parameterType="string">
+        DELETE FROM users WHERE id = #{userId}
+    </delete>
+    <!-- Order Mappings -->
+    <resultMap id="orderResultMap" type="io.hireroo.ecsite.entity.Order">
+        <id column="id" property="id" />
+        <result column="item_id" property="itemId" />
+        <result column="user_id" property="userId" />
+        <result column="quantity" property="quantity" />
+        <result column="amount" property="amount" />
+    </resultMap>
+    <select id="getOrder" parameterType="string" resultMap="orderResultMap">
+        SELECT id, item_id, user_id, quantity, amount FROM orders WHERE id = #{orderId}
+    </select>
+    <insert id="createOrder">
+        INSERT INTO orders (id, item_id, user_id, quantity, amount)
+        VALUES (#{id}, #{itemId}, #{userId}, #{quantity}, #{amount})
+    </insert>
+    <update id="updateItemStock" parameterType="map">
+        UPDATE items SET stock = #{stock} WHERE id = #{itemId}
+    </update>
+    <update id="updateUserSavings" parameterType="map">
+        UPDATE users SET savings = #{savings} WHERE id = #{userId}
+    </update>
+</mapper>
