@@ -8,14 +8,18 @@ import io.hireroo.ecsite.entity.ResponseMessage;
 import io.hireroo.ecsite.entity.User;
 import io.hireroo.ecsite.exception.InsufficientItemStockException;
 import io.hireroo.ecsite.exception.InsufficientUserBalanceException;
+import io.hireroo.ecsite.exception.ItemNotFoundException;
+import io.hireroo.ecsite.exception.UserNotFoundException;
 import io.hireroo.ecsite.service.EcsiteService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping(path = "/api")
 public class EcsiteController {
     @Autowired
@@ -90,26 +94,22 @@ public class EcsiteController {
     @PostMapping(path = "/item/{item_id}/buy")
     @ResponseBody
     public ResponseMessage createOrder(
-            @PathVariable("item_id") String itemId,
-            @RequestBody @Valid CreateOrder createOrder,
-            HttpServletResponse response
-    ) throws InsufficientItemStockException, InsufficientUserBalanceException {
+            @PathVariable("item_id") @Pattern(regexp = "^[A-Za-z0-9_]{1,8}$", message = "Item id must be max 8 characters") String itemId,
+            @RequestBody @Valid CreateOrder createOrder
+    ) throws InsufficientItemStockException, InsufficientUserBalanceException, UserNotFoundException, ItemNotFoundException {
         User user = ecsiteService.getUser(createOrder.getUserId());
         Item item = ecsiteService.getItem(itemId);
 
+        // Validate if User with provided id exists
         if (user == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            // TODO: add a response message
-            return null;
+            throw new UserNotFoundException("User with id :"+createOrder.getUserId()+" not found");
         }
+        // Validate if Item with id exists
         if (item == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            // TODO: add a response message
-            return null;
+            throw new ItemNotFoundException("Item with id :"+itemId+" not found");
         }
 
         createOrder.setItemId(itemId);
         return ecsiteService.createOrder(createOrder);
     }
-
 }

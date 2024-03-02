@@ -2,6 +2,8 @@ package io.hireroo.ecsite.advice;
 
 import io.hireroo.ecsite.exception.InsufficientItemStockException;
 import io.hireroo.ecsite.exception.InsufficientUserBalanceException;
+import io.hireroo.ecsite.exception.ItemNotFoundException;
+import io.hireroo.ecsite.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +24,21 @@ public class ApplicationExceptionHandler {
         return errorMap;
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public Map<String, String> userNotFoundExceptionHandler(UserNotFoundException exception) {
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error message", exception.getMessage());
+        return errorMap;
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ItemNotFoundException.class)
+    public Map<String, String> itemNotFoundExceptionHandler(ItemNotFoundException exception) {
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error message", exception.getMessage());
+        return errorMap;
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InsufficientItemStockException.class)

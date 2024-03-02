@@ -29,13 +29,16 @@
         <result column="quantity" property="quantity" />
         <result column="amount" property="amount" />
     </resultMap>
-    <select id="getOrder" parameterType="string" resultMap="orderResultMap">
-        SELECT id, item_id, user_id, quantity, amount FROM orders WHERE id = #{orderId}
-    </select>
     <insert id="createOrder">
         INSERT INTO orders (id, item_id, user_id, quantity, amount)
         VALUES (#{id}, #{itemId}, #{userId}, #{quantity}, #{amount})
     </insert>
+    <select id="getOrderCountByItemId" parameterType="string" resultType="Integer">
+        SELECT count(*) FROM orders WHERE item_id = #{itemId}
+    </select>
+    <delete id="deleteAllOrders">
+        DELETE FROM orders
+    </delete>
     <update id="updateItemStock" parameterType="map">
         UPDATE items SET stock = #{stock} WHERE id = #{itemId}
     </update>
