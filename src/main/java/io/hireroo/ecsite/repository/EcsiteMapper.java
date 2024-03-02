@@ -4,6 +4,7 @@ import io.hireroo.ecsite.dto.CreateItem;
 import io.hireroo.ecsite.dto.CreateOrder;
 import io.hireroo.ecsite.dto.CreateUser;
 import io.hireroo.ecsite.entity.Item;
+import io.hireroo.ecsite.entity.Order;
 import io.hireroo.ecsite.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,4 +19,6 @@ public interface EcsiteMapper {
     void createOrder(CreateOrder order);
     void updateUserSavings(Integer savings, String userId);
     void updateItemStock(Integer stock, String itemId);
+    Integer getOrderCountByItemId(String itemId);
+    void deleteAllOrders();
 }

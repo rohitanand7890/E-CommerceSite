@@ -4,13 +4,13 @@ import io.hireroo.ecsite.dto.CreateItem;
 import io.hireroo.ecsite.dto.CreateOrder;
 import io.hireroo.ecsite.dto.CreateUser;
 import io.hireroo.ecsite.entity.Item;
+import io.hireroo.ecsite.entity.ResponseMessage;
 import io.hireroo.ecsite.entity.User;
+import io.hireroo.ecsite.exception.InsufficientItemStockException;
+import io.hireroo.ecsite.exception.InsufficientUserBalanceException;
 import io.hireroo.ecsite.repository.EcsiteMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import io.hireroo.ecsite.entity.ResponseMessage;
-import io.hireroo.ecsite.exception.InsufficientItemStockException;
-import io.hireroo.ecsite.exception.InsufficientUserBalanceException;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,26 +41,34 @@ public class EcsiteService {
     @Transactional(isolation = Isolation.SERIALIZABLE, timeout = 6)
     public ResponseMessage createOrder(CreateOrder createOrder) throws InsufficientItemStockException, InsufficientUserBalanceException {
 
-        Item item = getItem(createOrder.getItemId());
-        User user = getUser(createOrder.getUserId());
-        var orderAmount = item.getPrice() * createOrder.getQuantity();
-        boolean isStockSufficient = item.getStock() >= createOrder.getQuantity();
-        boolean isUserBalanceEnough = user.getSavings() >= orderAmount;
+        String itemId = createOrder.getItemId();
+        String userId = createOrder.getUserId();
 
+        Item item = getItem(itemId);
+        User user = getUser(userId);
+
+        Integer orderQuantity = createOrder.getQuantity();
+        Integer itemStock = item.getStock();
+
+        boolean isStockSufficient = itemStock >= orderQuantity;
         if(!isStockSufficient) {
-            throw new InsufficientItemStockException("Item stock not enough in the inventory, required :"+createOrder.getQuantity()+", available only :"+item.getStock());
+            throw new InsufficientItemStockException("Item stock not enough in the inventory, required :"+ orderQuantity +", available only :"+ itemStock);
         }
+
+        var orderAmount = item.getPrice() * orderQuantity;
+        Integer userSavings = user.getSavings();
+        boolean isUserBalanceEnough = userSavings >= orderAmount;
         if(!isUserBalanceEnough) {
             throw new InsufficientUserBalanceException("User balance insufficient for the purchase amount");
         }
 
         //Debit order amount from User
-        Integer updatedSavings = user.getSavings() - orderAmount;
-        ecsiteMapper.updateUserSavings(updatedSavings, createOrder.getUserId());
+        Integer updatedSavings = userSavings - orderAmount;
+        ecsiteMapper.updateUserSavings(updatedSavings, userId);
 
         //Update item Stock
-        var updatedStock = item.getStock() - createOrder.getQuantity();
-        ecsiteMapper.updateItemStock(updatedStock, createOrder.getItemId());
+        var updatedStock = itemStock - orderQuantity;
+        ecsiteMapper.updateItemStock(updatedStock, itemId);
 
         //Create an Order
         createOrder.setAmount(orderAmount);

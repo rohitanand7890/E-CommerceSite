@@ -15,7 +15,7 @@ public class CreateOrder implements Serializable {
     private String itemId;
 
     @JsonProperty("user_id")
-    @Pattern(regexp = "^[A-Za-z0-9]{1,8}$", message = "user id must be max 8 characters")
+    @Pattern(regexp = "^[A-Za-z0-9_]{1,8}$", message = "user id must be max 8 characters")
     private String userId;
 
     @NotNull(message = "quantity cannot be empty or null" )
